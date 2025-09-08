@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wedding Reminders Widget</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Parisienne&family=Montserrat:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: transparent;
+        color: #4a4a4a;
+        line-height: 1.6;
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
+      }
+      .reminder-widget-container {
+        max-width: 100%;
+        margin: 0 auto;
+        background-color: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(166, 124, 124, 0.15);
+        overflow: hidden;
+        border: 2px solid #d4a5a5;
+        width: 280px; /* Made smaller */
+      }
+      .widget-header {
+        background: linear-gradient(135deg, #d4a5a5, #c19696);
+        padding: 15px;
+        text-align: center;
+        position: relative;
+      }
+      .widget-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 3C7.82 3 2 8.82 2 16s5.82 13 13 13 13-5.82 13-13S22.18 3 15 3zm0 2c6.08 0 11 4.92 11 11s-4.92 11-11 11S4 22.08 4 16 8.92 5 15 5zm0 2c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 2c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.14-7-7 3.14-7 7-7z' fill='rgba(255,255,255,0.1)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+      }
+      .widget-title {
+        font-family: "Parisienne", cursive;
+        font-size: 24px; /* Made smaller */
+        font-weight: 400;
+        color: white;
+        margin-bottom: 5px;
+        position: relative;
+        z-index: 1;
+      }
+      .widget-subtitle {
+        font-family: "Montserrat", sans-serif;
+        font-size: 12px; /* Made smaller */
+        color: rgba(255, 255, 255, 0.9);
+        position: relative;
+        z-index: 1;
+      }
+      .widget-content {
+        padding: 15px;
+        background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4a5a5' fill-opacity='0.05'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/svg%3E");
+        max-height: 250px; /* Made smaller */
+        overflow-y: auto;
+      }
+      .reminder-list {
+        list-style: none;
+        max-height: 200px; /* Made smaller */
+        overflow-y: auto;
+      }
+      .reminder-item {
+        background-color: #f9f7f7;
+        border-radius: 12px;
+        padding: 10px; /* Made smaller */
+        margin-bottom: 8px; /* Made smaller */
+        position: relative;
+        border-left: 4px solid #d4a5a5;
+        transition: all 0.3s ease;
+      }
+      .reminder-item.active {
+        background: linear-gradient(135deg, #f0e6e6, #e6d9d9);
+        border-left-color: #a67c7c;
+        animation: pulse 1.5s infinite;
+        box-shadow: 0 5px 15px rgba(166, 124, 124, 0.3);
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(166, 124, 124, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(166, 124, 124, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(166, 124, 124, 0);
+        }
+      }
+      .reminder-task {
+        font-weight: 600;
+        margin-bottom: 3px; /* Made smaller */
+        color: #a67c7c;
+        font-size: 14px; /* Made smaller */
+      }
+      .reminder-datetime {
+        font-size: 12px; /* Made smaller */
+        color: #a67c7c;
+        margin-bottom: 5px; /* Made smaller */
+      }
+      .reminder-note {
+        font-size: 12px; /* Made smaller */
+        font-style: italic;
+        color: #777;
+        margin-bottom: 8px; /* Made smaller */
+      }
+      .empty-state {
+        text-align: center;
+        padding: 20px; /* Made smaller */
+        color: #a67c7c;
+      }
+      .empty-state i {
+        font-size: 36px; /* Made smaller */
+        color: #d4a5a5;
+        margin-bottom: 10px; /* Made smaller */
+      }
+      .cute-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #d4a5a5, #c19696);
+        color: white;
+        padding: 15px; /* Made smaller */
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(166, 124, 124, 0.3);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        max-width: 300px; /* Made smaller */
+        transform: translateX(400px);
+        transition: transform 0.5s ease;
+        overflow: hidden;
+      }
+      .cute-notification.show {
+        transform: translateX(0);
+      }
+      .cute-notification-icon {
+        font-size: 28px; /* Made smaller */
+        margin-right: 12px; /* Made smaller */
+        animation: heartBeat 1.5s infinite;
+      }
+      @keyframes heartBeat {
+        0% {
+          transform: scale(1);
+        }
+        14% {
+          transform: scale(1.3);
+        }
+        28% {
+          transform: scale(1);
+        }
+        42% {
+          transform: scale(1.3);
+        }
+        70% {
+          transform: scale(1);
+        }
+      }
+      .cute-notification-content {
+        flex: 1;
+      }
+      .cute-notification-title {
+        font-family: "Parisienne", cursive;
+        font-size: 20px; /* Made smaller */
+        font-weight: 400;
+        margin-bottom: 3px; /* Made smaller */
+      }
+      .cute-notification-message {
+        font-family: "Montserrat", sans-serif;
+        font-size: 14px; /* Made smaller */
+      }
+      .cute-notification-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px; /* Made smaller */
+        cursor: pointer;
+        margin-left: 8px; /* Made smaller */
+        opacity: 0.7;
+        transition: opacity 0.3s;
+      }
+      .cute-notification-close:hover {
+        opacity: 1;
+      }
+      .last-updated {
+        text-align: center;
+        font-size: 11px; /* Made smaller */
+        color: #a67c7c;
+        margin-top: 10px; /* Made smaller */
+        font-style: italic;
+      }
+      /* Responsive design */
+      @media (max-width: 600px) {
+        .reminder-widget-container {
+          border-radius: 0;
+          width: 100%; /* Full width on mobile */
+        }
+        .cute-notification {
+          max-width: calc(100% - 40px);
+          left: 20px;
+          right: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reminder-widget-container">
+      <div class="widget-header">
+        <h2 class="widget-title">Wedding Reminders</h2>
+        <p class="widget-subtitle">Your active wedding planning reminders</p>
+      </div>
+      <div class="widget-content">
+        <ul class="reminder-list" id="reminderList">
+          <li class="empty-state">
+            <i class="fas fa-bell"></i>
+            <p>No reminders set yet</p>
+          </li>
+        </ul>
+        <div class="last-updated" id="lastUpdated">Last updated: Never</div>
+      </div>
+    </div>
+    <!-- Cute Notification Popup -->
+    <div class="cute-notification" id="cuteNotification">
+      <div class="cute-notification-icon">
+        <i class="fas fa-heart"></i>
+      </div>
+      <div class="cute-notification-content">
+        <div class="cute-notification-title">Wedding Reminder!</div>
+        <div class="cute-notification-message" id="notificationMessage">
+          Don't forget your wedding task!
+        </div>
+      </div>
+      <button class="cute-notification-close" id="notificationClose">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <script>
+      // Initialize reminders array and timeouts
+      let reminders = [];
+      let reminderTimeouts = {};
+      // DOM elements
+      const reminderList = document.getElementById("reminderList");
+      const cuteNotification = document.getElementById("cuteNotification");
+      const notificationMessage = document.getElementById(
+        "notificationMessage"
+      );
+      const notificationClose = document.getElementById("notificationClose");
+      const lastUpdated = document.getElementById("lastUpdated");
+      // Event listeners
+      notificationClose.addEventListener("click", hideCuteNotification);
+      // Listen for storage events to update when reminders change in the main app
+      window.addEventListener("storage", function (event) {
+        if (event.key === "weddingReminders") {
+          loadReminders();
+        }
+      });
+      // Check for updates every 30 seconds
+      setInterval(loadReminders, 30000);
+      // Load reminders from localStorage on page load
+      window.addEventListener("load", () => {
+        loadReminders();
+      });
+      // Function to load reminders from localStorage
+      function loadReminders() {
+        // Clear all existing timeouts
+        Object.values(reminderTimeouts).forEach((timeoutId) => {
+          clearTimeout(timeoutId);
+        });
+        reminderTimeouts = {};
+        // Get reminders from localStorage
+        const savedReminders = localStorage.getItem("weddingReminders");
+        if (savedReminders) {
+          try {
+            reminders = JSON.parse(savedReminders);
+            // Filter out reminders that have already passed
+            const now = new Date();
+            const futureReminders = reminders.filter((reminder) => {
+              const reminderDate = new Date(
+                `${reminder.date}T${reminder.time}`
+              );
+              return reminderDate > now;
+            });
+            // Update localStorage to remove past reminders
+            if (futureReminders.length !== reminders.length) {
+              localStorage.setItem(
+                "weddingReminders",
+                JSON.stringify(futureReminders)
+              );
+              reminders = futureReminders;
+            }
+            // Set timeouts for future reminders
+            reminders.forEach((reminder) => {
+              const reminderDate = new Date(
+                `${reminder.date}T${reminder.time}`
+              );
+              const timeUntilReminder = reminderDate.getTime() - now.getTime();
+              if (timeUntilReminder > 0) {
+                const timeoutId = setTimeout(() => {
+                  triggerReminder(reminder);
+                }, timeUntilReminder);
+                reminderTimeouts[reminder.id] = timeoutId;
+              }
+            });
+            // Update the UI
+            renderReminders();
+            updateLastUpdated();
+          } catch (e) {
+            console.error("Failed to load reminders:", e);
+          }
+        } else {
+          // No reminders found
+          renderEmptyState();
+          updateLastUpdated();
+        }
+      }
+      // Function to render reminders in the UI
+      function renderReminders() {
+        reminderList.innerHTML = "";
+        if (reminders.length === 0) {
+          renderEmptyState();
+          return;
+        }
+        reminders.forEach((reminder) => {
+          const reminderItem = document.createElement("li");
+          reminderItem.className = "reminder-item";
+          reminderItem.dataset.reminderId = reminder.id;
+          // Format date and time
+          const dateObj = new Date(`${reminder.date}T${reminder.time}`);
+          const formattedDate = dateObj.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+          const formattedTime = dateObj.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          // Create reminder content
+          reminderItem.innerHTML = `
+                    <div class="reminder-task">${reminder.taskText}</div>
+                    <div class="reminder-datetime">${formattedDate} at ${formattedTime}</div>
+                    ${
+                      reminder.note
+                        ? `<div class="reminder-note">${reminder.note}</div>`
+                        : ""
+                    }
+                `;
+          // Add to list
+          reminderList.appendChild(reminderItem);
+        });
+      }
+      // Function to render empty state
+      function renderEmptyState() {
+        reminderList.innerHTML = `
+                <li class="empty-state">
+                    <i class="fas fa-bell"></i>
+                    <p>No reminders set yet</p>
+                </li>
+            `;
+      }
+      // Function to update the last updated timestamp
+      function updateLastUpdated() {
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        lastUpdated.textContent = `Last updated: ${formattedTime}`;
+      }
+      // Function to trigger a reminder
+      function triggerReminder(reminder) {
+        // Play wedding chime sound
+        playWeddingChime();
+        // Show cute notification
+        showCuteNotification(reminder.taskText);
+        // Highlight the reminder in the widget
+        const reminderItem = reminderList.querySelector(
+          `[data-reminder-id="${reminder.id}"]`
+        );
+        if (reminderItem) {
+          reminderItem.classList.add("active");
+          // Auto-remove the active class after 10 seconds
+          setTimeout(() => {
+            reminderItem.classList.remove("active");
+          }, 10000);
+        }
+        // Remove the reminder from localStorage and the UI after a delay
+        setTimeout(() => {
+          removeReminder(reminder.id);
+        }, 10000);
+      }
+      // Function to remove a reminder
+      function removeReminder(reminderId) {
+        // Remove from localStorage
+        const updatedReminders = reminders.filter((r) => r.id !== reminderId);
+        localStorage.setItem(
+          "weddingReminders",
+          JSON.stringify(updatedReminders)
+        );
+        // Remove from the UI
+        const reminderItem = reminderList.querySelector(
+          `[data-reminder-id="${reminderId}"]`
+        );
+        if (reminderItem) {
+          reminderItem.remove();
+        }
+        // Update the reminders array
+        reminders = updatedReminders;
+        // Show empty state if no reminders
+        if (reminders.length === 0) {
+          renderEmptyState();
+        }
+        // Update the last updated timestamp
+        updateLastUpdated();
+      }
+      // Function to play wedding chime sound
+      function playWeddingChime() {
+        // Create a new audio context
+        const audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        // Create oscillators for the chime sound
+        const oscillator1 = audioContext.createOscillator();
+        const oscillator2 = audioContext.createOscillator();
+        const oscillator3 = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        // Configure oscillators
+        oscillator1.type = "sine";
+        oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+        oscillator1.frequency.exponentialRampToValueAtTime(
+          261.63,
+          audioContext.currentTime + 1.5
+        ); // C4
+        oscillator2.type = "triangle";
+        oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime); // E5
+        oscillator2.frequency.exponentialRampToValueAtTime(
+          329.63,
+          audioContext.currentTime + 1.5
+        ); // E4
+        oscillator3.type = "sine";
+        oscillator3.frequency.setValueAtTime(783.99, audioContext.currentTime); // G5
+        oscillator3.frequency.exponentialRampToValueAtTime(
+          392.0,
+          audioContext.currentTime + 1.5
+        ); // G4
+        // Configure gain
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 2
+        );
+        // Connect nodes
+        oscillator1.connect(gainNode);
+        oscillator2.connect(gainNode);
+        oscillator3.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        // Start and stop oscillators
+        oscillator1.start();
+        oscillator2.start();
+        oscillator3.start();
+        // Create a gentle fade-out
+        setTimeout(() => {
+          oscillator1.stop();
+          oscillator2.stop();
+          oscillator3.stop();
+        }, 2000);
+      }
+      // Function to show cute notification
+      function showCuteNotification(message) {
+        notificationMessage.textContent = message;
+        cuteNotification.classList.add("show");
+        // Auto hide after 10 seconds
+        setTimeout(() => {
+          hideCuteNotification();
+        }, 10000);
+      }
+      // Function to hide cute notification
+      function hideCuteNotification() {
+        cuteNotification.classList.remove("show");
+      }
+    </script>
+  </body>
+</html>
